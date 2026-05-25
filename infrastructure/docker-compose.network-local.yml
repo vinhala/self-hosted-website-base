@@ -1,4 +1,4 @@
-services:  
+services:
   caddy:
     image: lucaslorentz/caddy-docker-proxy:latest
     networks:
@@ -12,6 +12,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - caddy_data:/data
+
 networks:
   caddy-network:
     name: caddy-network

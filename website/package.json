@@ -1,0 +1,17 @@
+{
+  "name": "self-hosted-website-base",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --host 0.0.0.0",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "nuxt": "^4.0.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

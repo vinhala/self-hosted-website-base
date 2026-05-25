@@ -1,0 +1,15 @@
+services:
+  website:
+    deploy:
+      labels:
+        caddy: ${WEBSITE_DOMAIN}
+
+  analytics:
+    deploy:
+      labels:
+        caddy: ${UMAMI_DOMAIN}
+
+  blog:
+    deploy:
+      labels:
+        caddy: ${GHOST_DOMAIN}

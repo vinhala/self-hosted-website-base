@@ -1,6 +1,9 @@
 services:
-  frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/frontend:latest
+  website:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/website:latest
+    environment:
+      NUXT_PUBLIC_UMAMI_HOST: https://${UMAMI_DOMAIN}
+      NUXT_PUBLIC_UMAMI_WEBSITE_ID: ${NUXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     networks:
       - caddy-network
     deploy:
@@ -9,13 +12,15 @@ services:
         condition: on-failure
       update_config:
         order: start-first
-    labels:
-      caddy.reverse_proxy: "{{upstreams 80}}"
+      labels:
+        caddy.reverse_proxy: "{{upstreams 3000}}"
 
-  api:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/backend:latest
-    env_file:
-      - ../.env
+  analytics:
+    image: docker.umami.is/umami-software/umami:postgresql-latest
+    environment:
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD}@analytics_db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
     networks:
       - caddy-network
       - private
@@ -25,5 +30,76 @@ services:
         condition: on-failure
       update_config:
         order: start-first
-    labels:
-      caddy.reverse_proxy: "{{upstreams 80}}"
+      labels:
+        caddy.reverse_proxy: "{{upstreams 3000}}"
+
+  analytics_db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    networks:
+      - private
+    volumes:
+      - analytics_db_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  blog:
+    image: ghost:5-alpine
+    environment:
+      url: https://${GHOST_DOMAIN}
+      database__client: mysql
+      database__connection__host: blog_db
+      database__connection__user: ghost
+      database__connection__password: ${GHOST_DB_PASSWORD}
+      database__connection__database: ghost
+      mail__transport: SMTP
+      mail__options__host: ${GHOST_MAIL_HOST}
+      mail__options__port: ${GHOST_MAIL_PORT}
+      mail__options__secure: ${GHOST_MAIL_SECURE}
+      mail__options__auth__user: ${GHOST_MAIL_USER}
+      mail__options__auth__pass: ${GHOST_MAIL_PASSWORD}
+      mail__from: ${GHOST_MAIL_SENDER}
+    networks:
+      - caddy-network
+      - private
+    volumes:
+      - blog_content:/var/lib/ghost/content
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        order: start-first
+      labels:
+        caddy.reverse_proxy: "{{upstreams 2368}}"
+
+  blog_db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${GHOST_DB_PASSWORD}
+      MYSQL_DATABASE: ghost
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ${GHOST_DB_PASSWORD}
+    networks:
+      - private
+    volumes:
+      - blog_db_data:/var/lib/mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  caddy-network:
+  private:
+    driver: overlay
+
+volumes:
+  analytics_db_data:
+  blog_content:
+  blog_db_data:
