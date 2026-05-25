@@ -18,30 +18,31 @@ jobs:
       - name: Copy files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.vm_host }}
-          username: ${{ secrets.vm_user_name }}
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           source: "infrastructure/*"
-          target: "/home/${{ secrets.vm_user_name }}/infrastructure/"
+          target: "/home/${{ secrets.VM_USER }}/infrastructure/"
           strip_components: 1
 
       - name: Deploy on VM
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.vm_host }}
-          username: ${{ secrets.vm_user_name }}
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.vm_user_name }}/infrastructure
+            cd /home/${{ secrets.VM_USER }}/infrastructure
+            OWNER_LC="$(printf '%s' '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
             # Verify Docker access
             docker ps
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             # Pull images
             jq -r '.[].image' services.json | while IFS= read -r image; do
-              docker pull --platform=linux/amd64 "ghcr.io/${{ github.repository_owner }}/${image}:latest"
+              docker pull --platform=linux/amd64 "ghcr.io/${OWNER_LC}/${image}:latest"
             done
             # Deploy stack
-            make deploy-prod STACK_NAME=${{ vars.STACK_NAME }} ENV_FILE=/home/${{ secrets.vm_user_name }}/.env GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            make deploy-prod STACK_NAME=${{ vars.STACK_NAME }} ENV_FILE=/home/${{ secrets.VM_USER }}/.env GITHUB_REPOSITORY_OWNER=${OWNER_LC}
             # Cleanup
-            rm -rf /home/${{ secrets.vm_user_name }}/infrastructure/* 
+            rm -rf /home/${{ secrets.VM_USER }}/infrastructure/*

@@ -5,11 +5,33 @@ on:
     secrets:
       VM_HOST:
         required: true
-      VM_USER_NAME:
+      VM_USER:
         required: true
       VM_SSH_KEY:
         required: true
-      SECRET_API_KEY:
+      WEBSITE_DOMAIN:
+        required: true
+      UMAMI_DOMAIN:
+        required: true
+      GHOST_DOMAIN:
+        required: true
+      UMAMI_DB_PASSWORD:
+        required: true
+      UMAMI_APP_SECRET:
+        required: true
+      GHOST_DB_PASSWORD:
+        required: true
+      GHOST_MAIL_HOST:
+        required: true
+      GHOST_MAIL_PORT:
+        required: true
+      GHOST_MAIL_SECURE:
+        required: true
+      GHOST_MAIL_USER:
+        required: true
+      GHOST_MAIL_PASSWORD:
+        required: true
+      GHOST_MAIL_SENDER:
         required: true
 
 jobs:
@@ -19,13 +41,37 @@ jobs:
       - name: Write .env file on VM
         uses: appleboy/ssh-action@v1.0.3
         env:
-          SECRET_API_KEY: ${{ secrets.SECRET_API_KEY }}
+          WEBSITE_DOMAIN: ${{ secrets.WEBSITE_DOMAIN }}
+          UMAMI_DOMAIN: ${{ secrets.UMAMI_DOMAIN }}
+          GHOST_DOMAIN: ${{ secrets.GHOST_DOMAIN }}
+          UMAMI_DB_PASSWORD: ${{ secrets.UMAMI_DB_PASSWORD }}
+          UMAMI_APP_SECRET: ${{ secrets.UMAMI_APP_SECRET }}
+          GHOST_DB_PASSWORD: ${{ secrets.GHOST_DB_PASSWORD }}
+          GHOST_MAIL_HOST: ${{ secrets.GHOST_MAIL_HOST }}
+          GHOST_MAIL_PORT: ${{ secrets.GHOST_MAIL_PORT }}
+          GHOST_MAIL_SECURE: ${{ secrets.GHOST_MAIL_SECURE }}
+          GHOST_MAIL_USER: ${{ secrets.GHOST_MAIL_USER }}
+          GHOST_MAIL_PASSWORD: ${{ secrets.GHOST_MAIL_PASSWORD }}
+          GHOST_MAIL_SENDER: ${{ secrets.GHOST_MAIL_SENDER }}
+          NUXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ vars.NUXT_PUBLIC_UMAMI_WEBSITE_ID }}
         with:
           host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER_NAME }}
+          username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          envs: SECRET_API_KEY
+          envs: WEBSITE_DOMAIN,UMAMI_DOMAIN,GHOST_DOMAIN,UMAMI_DB_PASSWORD,UMAMI_APP_SECRET,GHOST_DB_PASSWORD,GHOST_MAIL_HOST,GHOST_MAIL_PORT,GHOST_MAIL_SECURE,GHOST_MAIL_USER,GHOST_MAIL_PASSWORD,GHOST_MAIL_SENDER,NUXT_PUBLIC_UMAMI_WEBSITE_ID
           script: |
             {
-              printf 'SECRET_API_KEY=%s\n' "${SECRET_API_KEY}"
+              printf 'WEBSITE_DOMAIN=%s\n' "${WEBSITE_DOMAIN}"
+              printf 'UMAMI_DOMAIN=%s\n' "${UMAMI_DOMAIN}"
+              printf 'GHOST_DOMAIN=%s\n' "${GHOST_DOMAIN}"
+              printf 'UMAMI_DB_PASSWORD=%s\n' "${UMAMI_DB_PASSWORD}"
+              printf 'UMAMI_APP_SECRET=%s\n' "${UMAMI_APP_SECRET}"
+              printf 'GHOST_DB_PASSWORD=%s\n' "${GHOST_DB_PASSWORD}"
+              printf 'GHOST_MAIL_HOST=%s\n' "${GHOST_MAIL_HOST}"
+              printf 'GHOST_MAIL_PORT=%s\n' "${GHOST_MAIL_PORT}"
+              printf 'GHOST_MAIL_SECURE=%s\n' "${GHOST_MAIL_SECURE}"
+              printf 'GHOST_MAIL_USER=%s\n' "${GHOST_MAIL_USER}"
+              printf 'GHOST_MAIL_PASSWORD=%s\n' "${GHOST_MAIL_PASSWORD}"
+              printf 'GHOST_MAIL_SENDER=%s\n' "${GHOST_MAIL_SENDER}"
+              printf 'NUXT_PUBLIC_UMAMI_WEBSITE_ID=%s\n' "${NUXT_PUBLIC_UMAMI_WEBSITE_ID}"
             } > ~/.env

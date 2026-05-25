@@ -5,7 +5,7 @@ on:
     secrets:
       VM_HOST:
         required: true
-      VM_USER_NAME:
+      VM_USER:
         required: true
       VM_SSH_KEY:
         required: true
@@ -19,7 +19,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER_NAME }}
+          username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             # Remove all unused images (dangling images)
